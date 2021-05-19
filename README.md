@@ -1,4 +1,6 @@
-Simple normalizing flow with a conditional variable of any size
+# MADE & MAF implementation in PyTorch
+
+Simple normalizing flow with a conditional variable of any size.
 
 Example:
 
