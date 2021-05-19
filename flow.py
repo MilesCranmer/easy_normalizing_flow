@@ -149,6 +149,23 @@ class Cycle(nn.Module):
         idx = torch.arange(x.shape[1], device=x.device)
         idx = torch.cat((idx[[-1]], idx[:-1]))
         return x[:, idx]
+    
+class Perm(nn.Module):
+    def __init__(self, nvars, perm=None):
+        super(self.__class__, self).__init__()
+        # If perm is none, chose some random permutation that gets fixed at initialization
+        if perm is None:
+            perm = torch.randperm(nvars)
+
+        self.perm = perm
+
+    def forward(self, x, context):
+        idx = self.perm.to(x.device)
+        return x[:, idx], 0
+
+    def invert(self, x, context):
+        idx = self.perm.to(x.device)
+        return x[:, idx]
       
       
 class Flow(nn.Module):
