@@ -7,11 +7,13 @@ Example:
 Make the model, for 3 features (+1 conditional).
 ```python
 m = Flow(
-    *[[MAF(3, 1), Cycle()][i%2] for i in range(5*2 + 1)]
+    *[[MAF(3, 1), Perm()][i%2] for i in range(5*2 + 1)]
 ).cuda()
 
 ```
-This has a stack of 5 MADEs, cycling the dependencies between each.
+This has a stack of 5 MADEs, permuting
+the dependencies between each. The permutation is randomly
+chosen at initialization.
 
 Let's say our data is:
 
