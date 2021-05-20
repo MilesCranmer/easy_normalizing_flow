@@ -1,6 +1,6 @@
-# MADE & MAF implementation in PyTorch
+# MAF implementation in PyTorch
 
-Simple normalizing flow with a conditional variable of any size.
+Simple normalizing flow with a conditional variable of any size. Uses Karpathy's MADE for the autoregressive function.
 
 Example:
 
