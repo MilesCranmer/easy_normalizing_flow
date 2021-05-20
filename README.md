@@ -7,7 +7,7 @@ Example:
 Make the model, for 3 features (+1 conditional).
 ```python
 m = Flow(
-    *[[MAF(3, 1), Perm()][i%2] for i in range(5*2 + 1)]
+    *[[MAF(3, 1), Perm(3)][i%2] for i in range(5*2 + 1)]
 ).cuda()
 
 ```
