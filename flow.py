@@ -102,39 +102,36 @@ class MAF(nn.Module):
     """x0 only depends on x0, etc"""
     def __init__(self, features, context, hidden=100, nlayers=1):
         super(self.__class__, self).__init__()
-        self._fmu = MADE(features+context, [hidden]*nlayers, features+context, natural_ordering=True)
-        self._falpha = MADE(features+context, [hidden]*nlayers, features+context, natural_ordering=True)
+        self._fmualpha = MADE(features+context, [hidden]*nlayers, 2*(features+context), natural_ordering=True)
         self.context_map = nn.Linear(context, context)
         self.context = context
+        self.features = features
 
-    def fmu(self, x):
+    def fmualpha(self, x):
         # Only return the data parts: (conditioned on whole context vector)
-        return self._fmu(x)[:, self.context:]
-
-    def falpha(self, x):
-        # Only return the data parts: (conditioned on whole context vector)
-        return self._falpha(x)[:, self.context:]
+        out = self._fmualpha(x)
+        mu = out[:, self.context:self.context+self.features]
+        alpha = out[:, 2*self.context+self.features:]
+        return mu, alpha
 
     def load_context(self, x, context):
         return torch.cat((self.context_map(context), x), dim=1)
 
     def invert(self, u, context):
         _x = self.load_context(u, context)
-        mu = self.fmu(_x)
-        alpha = self.falpha(_x)
+        mu, alpha = self.fmualpha(_x)
         x = u * torch.exp(alpha) + mu
         return x
 
     def forward(self, x, context):
         # Invert the flow
         _x = self.load_context(x, context)
-        mu = self.fmu(_x)
-        alpha = self.falpha(_x)
+        mu, alpha = self.fmualpha(_x)
         u = (x - mu) * torch.exp(-alpha)
         log_det = - torch.sum(alpha, dim=1)
         return u, log_det
-      
-      
+
+
 class Cycle(nn.Module):
 
     def __init__(self):
