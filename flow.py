@@ -132,21 +132,6 @@ class MAF(nn.Module):
         return u, log_det
 
 
-class Cycle(nn.Module):
-
-    def __init__(self):
-        super(self.__class__, self).__init__()
-
-    def forward(self, x, context):
-        idx = torch.arange(x.shape[1], device=x.device)
-        idx = torch.cat((idx[1:], idx[[0]]))
-        return x[:, idx], 0
-
-    def invert(self, x, context):
-        idx = torch.arange(x.shape[1], device=x.device)
-        idx = torch.cat((idx[[-1]], idx[:-1]))
-        return x[:, idx]
-    
 class Perm(nn.Module):
     def __init__(self, nvars, perm=None):
         super(self.__class__, self).__init__()
@@ -164,7 +149,6 @@ class Perm(nn.Module):
         rev_idx = self.reverse_perm.to(x.device)
         return x[:, rev_idx]
       
-      
 class Flow(nn.Module):
     def __init__(self, *layers):
         super(self.__class__, self).__init__()
@@ -172,14 +156,25 @@ class Flow(nn.Module):
 
     def forward(self, x, context):
         log_det = None
-
         for layer in self.layers:
             x, _log_det = layer(x, context)
             log_det = (log_det if log_det is not None else 0) + _log_det
 
+        # Same ordering as input:
+        for layer in self.layers[::-1]:
+            if 'Perm' not in str(layer):
+                continue
+            x = x[:, layer.reverse_perm]
+            
         return x, log_det
 
     def invert(self, u, context):
+        for layer in self.layers:
+            if 'Perm' not in str(layer):
+                continue
+            u = u[:, layer.perm]
+            
+            
         for layer in self.layers[::-1]:
             u = layer.invert(u, context)
         
